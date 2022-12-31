@@ -6,9 +6,13 @@ export default async (req: NextRequest) => {
     const flowId = req.nextUrl.searchParams.get('flow_id');
     const cronStr = req.nextUrl.searchParams.get('cron');
     const body = await req.text();
-  
-    if (!flowsUser || !flowId) {
+
+    if (!flowsUser || !flowId || !cronStr) {
         return new NextResponse('Bad request', {status: 400});
+    }
+
+    if (!validCron(cronStr)) {
+        return new NextResponse('Invalid cron expression: expected only one exact hour and one exact minute', {status: 400});
     }
   
     try {
@@ -18,7 +22,10 @@ export default async (req: NextRequest) => {
         if (cron) {
             scheduleId = cron.schedule_id;
             let res = await fetch(`https://qstash.upstash.io/v1/schedules/${scheduleId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
+                }
             });
 
             if (!res || !res.ok) {
@@ -36,7 +43,7 @@ export default async (req: NextRequest) => {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
-                'Upstash-Cron': `0 0 ${cronStr}`
+                'Upstash-Cron': cronStr
             },
             body
         });
@@ -48,11 +55,12 @@ export default async (req: NextRequest) => {
         let result = await res.json();
         scheduleId = result.scheduleId;
 
-        await redis.set(`${lKey}:scheduler`, {
+        // Value must be array for matching multiple flows
+        await redis.set(`${lKey}:scheduler`, [{
           flow_id: flowId,
           flows_user: flowsUser,
           schedule_id: scheduleId
-        });
+        }]);
 
         let r = {
           l_key: lKey,
@@ -75,6 +83,21 @@ function makeKey(length: number) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
+}
+
+function validCron(cron: string) : boolean {
+    let m = cron.match(/^(\d{1,2})\s+(\d{1,2})\s/);
+    if (!m || m.length !== 3) {
+        return false;
+    }
+    ;
+    if (parseInt(m[1]) >= 60) {
+        return false;
+    }
+    if (parseInt(m[2]) >= 24) {
+        return false;
+    }
+    return true;
 }
 
 export const config = {

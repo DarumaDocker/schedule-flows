@@ -65,7 +65,10 @@ pub fn listen_to_request(cron: String, body: String) {
         let res = request::post(
             format!(
                 "{}/{}/{}/listen?cron={}",
-                SCHEDULE_API_PREFIX, flows_user, flow_id, cron
+                SCHEDULE_API_PREFIX,
+                flows_user,
+                flow_id,
+                urlencoding::encode(&cron)
             ),
             body.as_bytes(),
             &mut writer,
