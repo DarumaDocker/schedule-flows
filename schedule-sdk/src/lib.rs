@@ -57,7 +57,7 @@ pub fn cron_job_evoked(cron: String, body: String) -> Option<Vec<u8>> {
     }
 }
 
-pub fn message_from_request() -> Option<Vec<u8>> {
+fn message_from_request() -> Option<Vec<u8>> {
     unsafe {
         let l = get_event_body_length();
         let mut event_body = Vec::<u8>::with_capacity(l as usize);
