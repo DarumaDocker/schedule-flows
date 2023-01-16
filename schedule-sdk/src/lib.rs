@@ -1,6 +1,6 @@
 use http_req::request;
 
-const SCHEDULE_API_PREFIX: &str = "http://127.0.0.1:3003/api";
+const SCHEDULE_API_PREFIX: &str = "https://schedule-flows-extension.vercel.app/api";
 
 extern "C" {
     fn is_listening() -> i32;

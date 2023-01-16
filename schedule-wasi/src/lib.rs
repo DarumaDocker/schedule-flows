@@ -2,7 +2,7 @@ use http_req::request;
 use serde_json::Value;
 use std::collections::HashMap;
 
-const SCHEDULE_API_PREFIX: &str = "http://127.0.0.1:3003/api";
+const SCHEDULE_API_PREFIX: &str = "https://schedule-flows-extension.vercel.app/api";
 
 extern "C" {
     fn get_event_query_length() -> i32;

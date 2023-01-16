@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "http_req_wasi"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f6407e22ce1742c2f8bbcd41c4c9546c8a4e7d3caf0ee1598e04b93da8cbb11"
+checksum = "3556b0e995620949f801b847c8706fd8ae1c15f42eeaa9c0da3111b2eb0c6f1b"
 dependencies = [
  "unicase",
  "wasmedge_wasi_socket",
@@ -50,7 +50,7 @@ checksum = "4501abdff3ae82a1c1b477a17252eb69cee9e66eb915c1abaa4f44d873df9f09"
 
 [[package]]
 name = "schedule-flows"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "http_req_wasi",
  "serde",
