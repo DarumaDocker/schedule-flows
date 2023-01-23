@@ -1,9 +1,10 @@
 [package]
 name = "schedule-flows"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 license = "MIT/Apache-2.0"
 description = "Schedule extension for flows.network"
+documentation = "https://docs.rs/schedule-flows"
 
 [lib]
 path = "src/lib.rs"
