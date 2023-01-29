@@ -5,26 +5,32 @@
 //! To get started, let's write a task that will send a message to Slack at a fixed time wach day.
 //!
 //! ```
-//! use schedule_flows::cron_job_evoked;
+//! use schedule_flows::schedule_cron_job;
 //! use slack_flows::send_message_to_channel;
 //!
 //! #[no_mangle]
 //! pub fn run() {
-//!     if let Some(body) = cron_job_evoked(String::from("50 8 * * *"), String::from("cron_job_evoked")) {
+//!     schedule_cron_job(String::from("50 8 * * *"), String::from("cron_job_evoked"), |body| {
 //!         send_message_to_channel(
 //!             "myworkspace",
 //!             "mychannel",
 //!             String::from_utf8_lossy(&body).into_owned(),
 //!         );
-//!     }
+//!     });
 //! }
 //! ```
 //!
-//! [cron_job_evoked] will create a cron job and return the content
-//! when the job is triggered at 8:50 UTC each day.
+//! [schedule_cron_job()] will create a cron job. The callback closure
+//! will be called when the job is evoked at 8:50 UTC each day.
 use http_req::request;
+use lazy_static::lazy_static;
 
-const SCHEDULE_API_PREFIX: &str = "https://schedule-flows-extension.vercel.app/api";
+lazy_static! {
+    static ref SCHEDULE_API_PREFIX: String = String::from(
+        std::option_env!("SCHEDULE_API_PREFIX")
+            .unwrap_or("https://schedule-flows-extension.vercel.app/api")
+    );
+}
 
 extern "C" {
     fn is_listening() -> i32;
@@ -35,16 +41,19 @@ extern "C" {
     fn set_error_log(p: *const u8, len: i32);
 }
 
-/// Create a cron job and return the content when the job is triggered.
+/// Create a cron job. Call the callback function with the content when the job is evoked.
 ///
 /// `cron` is a [cron expression](https://crontab.guru/). There is
 /// currently a limitation to use this function. The minute and hour
 /// should be specified as exact number. That's to say, you can not
 /// set `*`, value list or range of values to these two fields.
 ///
-/// The return bytes vec is currently the same as the body passed to
-/// the function.
-pub fn cron_job_evoked(cron: String, body: String) -> Option<Vec<u8>> {
+/// The bytes vec as the parameter of callback function is currently
+/// the same as the body passed to the function.
+pub fn schedule_cron_job<F>(cron: String, body: String, cb: F)
+where
+    F: Fn(Vec<u8>),
+{
     unsafe {
         match is_listening() {
             // Calling register
@@ -66,7 +75,7 @@ pub fn cron_job_evoked(cron: String, body: String) -> Option<Vec<u8>> {
                 let res = request::post(
                     format!(
                         "{}/{}/{}/listen?cron={}",
-                        SCHEDULE_API_PREFIX,
+                        SCHEDULE_API_PREFIX.as_str(),
                         flows_user,
                         flow_id,
                         urlencoding::encode(&cron)
@@ -82,10 +91,12 @@ pub fn cron_job_evoked(cron: String, body: String) -> Option<Vec<u8>> {
                         set_error_log(writer.as_ptr(), writer.len() as i32);
                     }
                 }
-
-                None
             }
-            _ => message_from_request(),
+            _ => {
+                if let Some(m) = message_from_request() {
+                    cb(m);
+                }
+            }
         }
     }
 }
