@@ -1,4 +1,4 @@
-//! Make flow function acting as scheduled task in [Flows.network](https://test.flows.network)
+//! Make flow function acting as scheduled task in [Flows.network](https://flows.network)
 //!
 //! # Quick Start
 //!

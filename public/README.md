@@ -1,4 +1,4 @@
-This is a library for scheduling your flow function as a cron job in [test.flows.network](https://test.flows.network).
+This is a library for scheduling your flow function as a cron job in [flows.network](https://flows.network).
 
 ## Usage example
 ```rust
