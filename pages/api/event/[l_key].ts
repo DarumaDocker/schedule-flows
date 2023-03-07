@@ -9,7 +9,7 @@ export default async (req: NextRequest) => {
     }
   
     try {
-        let scheduler = await redis.get(`${lKey}:scheduler`);
+        let scheduler = await redis.get(`schedule:${lKey}:scheduler`);
 
         if (scheduler) {
           return NextResponse.json(scheduler);

@@ -18,7 +18,7 @@ export default async (req: NextRequest) => {
     try {
         let scheduleId;
         let lKey;
-        let cron: any = await redis.get(`${flowId}:cron`);
+        let cron: any = await redis.get(`schedule:${flowId}:cron`);
         if (cron) {
             scheduleId = cron.schedule_id;
             let res = await fetch(`https://qstash.upstash.io/v1/schedules/${scheduleId}`, {
@@ -33,8 +33,8 @@ export default async (req: NextRequest) => {
             }
 
             lKey = cron.l_key;
-            await redis.del(`${lKey}:scheduler`);
-            await redis.del(`${flowId}:cron`);
+            await redis.del(`schedule:${lKey}:scheduler`);
+            await redis.del(`schedule:${flowId}:cron`);
         }
 
         lKey = makeKey(10);
@@ -56,7 +56,7 @@ export default async (req: NextRequest) => {
         scheduleId = result.scheduleId;
 
         // Value must be array for matching multiple flows
-        await redis.set(`${lKey}:scheduler`, [{
+        await redis.set(`schedule:${lKey}:scheduler`, [{
           flow_id: flowId,
           flows_user: flowsUser,
           schedule_id: scheduleId
@@ -67,7 +67,7 @@ export default async (req: NextRequest) => {
           flows_user: flowsUser,
           schedule_id: scheduleId
         };
-        await redis.set(`${flowId}:cron`, r);
+        await redis.set(`schedule:${flowId}:cron`, r);
 
         return NextResponse.json(r);
     } catch(e: any) {
