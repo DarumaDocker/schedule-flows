@@ -44,7 +44,7 @@ extern "C" {
 /// Create a cron job. Call the callback function with the content when the job is evoked.
 ///
 /// `cron` is a [cron expression](https://crontab.guru/). There is
-/// currently a limitation to use this function. The minute and hour
+/// currently a limitation to use this function. The minute
 /// should be specified as exact number. That's to say, you can not
 /// set `*`, value list or range of values to these two fields.
 ///

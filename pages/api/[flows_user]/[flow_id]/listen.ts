@@ -12,7 +12,7 @@ export default async (req: NextRequest) => {
     }
 
     if (!validCron(cronStr)) {
-        return new NextResponse('Invalid cron expression: expected only one exact hour and one exact minute', {status: 400});
+        return new NextResponse('Invalid cron expression: expected only one exact minute', {status: 400});
     }
   
     try {
@@ -86,15 +86,12 @@ function makeKey(length: number) {
 }
 
 function validCron(cron: string) : boolean {
-    let m = cron.match(/^(\d{1,2})\s+(\d{1,2})\s/);
-    if (!m || m.length !== 3) {
+    let m = cron.match(/^(\d{1,2})\s/);
+    if (!m || m.length !== 2) {
         return false;
     }
     ;
     if (parseInt(m[1]) >= 60) {
-        return false;
-    }
-    if (parseInt(m[2]) >= 24) {
         return false;
     }
     return true;
