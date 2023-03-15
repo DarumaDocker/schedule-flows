@@ -152,35 +152,3 @@ checksum = "2fc4e93009d7e2c2e3d29b65d1f56ef606466673e85fe417808beca50cb608bf"
 dependencies = [
  "libc",
 ]
-
-[[patch.unused]]
-name = "airtable-flows"
-version = "0.1.9"
-
-[[patch.unused]]
-name = "flowsnet-platform-sdk"
-version = "0.1.2"
-
-[[patch.unused]]
-name = "github-flows"
-version = "0.2.0"
-
-[[patch.unused]]
-name = "lambda-flows"
-version = "0.2.1"
-
-[[patch.unused]]
-name = "openai-flows"
-version = "0.1.6"
-
-[[patch.unused]]
-name = "sendgrid-flows"
-version = "0.1.1"
-
-[[patch.unused]]
-name = "slack-flows"
-version = "0.2.6"
-
-[[patch.unused]]
-name = "store-flows"
-version = "0.2.0"
