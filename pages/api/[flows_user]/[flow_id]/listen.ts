@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { redis } from '@/lib/upstash';
 
-export default async (req: NextRequest) => {
+export default async function listen(req: NextRequest) {
     const flowsUser = req.nextUrl.searchParams.get('flows_user');
     const flowId = req.nextUrl.searchParams.get('flow_id');
     const cronStr = req.nextUrl.searchParams.get('cron');
@@ -28,7 +28,7 @@ export default async (req: NextRequest) => {
                 }
             });
 
-            if (!res || !res.ok) {
+            if (!res || (!res.ok && res.status != 404)) {
                 throw await res.text();
             }
 
