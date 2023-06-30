@@ -9,14 +9,15 @@
 //! use slack_flows::send_message_to_channel;
 //!
 //! #[no_mangle]
-//! pub fn run() {
+//! #[tokio::main(flavor = "current_thread")]
+//! pub async fn run() {
 //!     schedule_cron_job(String::from("50 8 * * *"), String::from("cron_job_evoked"), |body| {
 //!         send_message_to_channel(
 //!             "myworkspace",
 //!             "mychannel",
 //!             String::from_utf8_lossy(&body).into_owned(),
-//!         );
-//!     });
+//!         ).await
+//!     }).await;
 //! }
 //! ```
 //!
@@ -24,6 +25,7 @@
 //! will be called when the job is evoked at 8:50 UTC each day.
 use http_req::request;
 use lazy_static::lazy_static;
+use std::future::Future;
 
 lazy_static! {
     static ref SCHEDULE_API_PREFIX: String = String::from(
@@ -50,9 +52,10 @@ extern "C" {
 ///
 /// The bytes vec as the parameter of callback function is currently
 /// the same as the body passed to the function.
-pub fn schedule_cron_job<F>(cron: String, body: String, cb: F)
+pub async fn schedule_cron_job<F, Fut>(cron: String, body: String, cb: F)
 where
-    F: Fn(Vec<u8>),
+    F: FnOnce(Vec<u8>) -> Fut,
+    Fut: Future<Output = ()>,
 {
     unsafe {
         match is_listening() {
@@ -94,7 +97,7 @@ where
             }
             _ => {
                 if let Some(m) = message_from_request() {
-                    cb(m);
+                    cb(m).await;
                 }
             }
         }
