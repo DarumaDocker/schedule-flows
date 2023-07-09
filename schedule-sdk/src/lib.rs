@@ -40,6 +40,7 @@ extern "C" {
     fn get_flow_id(p: *mut u8) -> i32;
     fn get_event_body_length() -> i32;
     fn get_event_body(p: *mut u8) -> i32;
+    fn set_output(p: *const u8, len: i32);
     fn set_error_log(p: *const u8, len: i32);
 }
 
@@ -89,7 +90,14 @@ where
                 .unwrap();
 
                 match res.status_code().is_success() {
-                    true => {}
+                    true => {
+                        let output = format!(
+                            "[{}] Your flow is scheduled at '{}'.",
+                            std::env!("CARGO_CRATE_NAME"),
+                            cron
+                        );
+                        set_output(output.as_ptr(), output.len() as i32);
+                    }
                     false => {
                         set_error_log(writer.as_ptr(), writer.len() as i32);
                     }
