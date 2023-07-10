@@ -92,7 +92,7 @@ where
                 match res.status_code().is_success() {
                     true => {
                         let output = format!(
-                            "[{}] Your flow is scheduled at '{}'.",
+                            "[{}] Your flow is scheduled at `{}`.",
                             std::env!("CARGO_CRATE_NAME"),
                             cron
                         );

@@ -56,7 +56,7 @@ checksum = "4501abdff3ae82a1c1b477a17252eb69cee9e66eb915c1abaa4f44d873df9f09"
 
 [[package]]
 name = "schedule-flows"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "http_req_wasi",
  "lazy_static",
