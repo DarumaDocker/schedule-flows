@@ -20,7 +20,7 @@
 //!         "myworkspace",
 //!         "mychannel",
 //!         String::from_utf8_lossy(&body).into_owned(),
-//!     ).await
+//!     ).await;
 //! }
 //! ```
 //!
