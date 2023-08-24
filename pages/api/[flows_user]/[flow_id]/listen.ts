@@ -4,6 +4,7 @@ import { redis } from '@/lib/upstash';
 export default async function listen(req: NextRequest) {
     const flowsUser = req.nextUrl.searchParams.get('flows_user');
     const flowId = req.nextUrl.searchParams.get('flow_id');
+    const handlerFn = req.nextUrl.searchParams.get('handler_fn');
     const cronStr = req.nextUrl.searchParams.get('cron');
     const body = await req.text();
 
@@ -59,12 +60,14 @@ export default async function listen(req: NextRequest) {
         await redis.set(`schedule:${lKey}:scheduler`, [{
           flow_id: flowId,
           flows_user: flowsUser,
+          handler_fn: handlerFn,
           schedule_id: scheduleId
         }]);
 
         let r = {
           l_key: lKey,
           flows_user: flowsUser,
+          handler_fn: handlerFn,
           schedule_id: scheduleId
         };
         await redis.set(`schedule:${flowId}:cron`, r);
