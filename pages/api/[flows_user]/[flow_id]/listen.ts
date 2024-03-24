@@ -19,28 +19,52 @@ export default async function listen(req: NextRequest) {
     try {
         let scheduleId;
         let lKey;
-        let cron: any = await redis.get(`schedule:${flowId}:cron`);
-        if (cron) {
-            scheduleId = cron.schedule_id;
-            let res = await fetch(`https://qstash.upstash.io/v1/schedules/${scheduleId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
+        // Delete old schedule for QStash v1
+        {
+            let cron: any = await redis.get(`schedule:${flowId}:cron`);
+            if (cron) {
+                scheduleId = cron.schedule_id;
+                let res = await fetch(`https://qstash.upstash.io/v1/schedules/${scheduleId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
+                    }
+                });
+
+                if (!res || (!res.ok && res.status != 404)) {
+                    throw await res.text();
                 }
-            });
 
-            if (!res || (!res.ok && res.status != 404)) {
-                throw await res.text();
+                lKey = cron.l_key;
+                await redis.del(`schedule:${lKey}:scheduler`);
+                await redis.del(`schedule:${flowId}:cron`);
             }
+        }
+        // Delete old schedule for QStash v2
+        {
+            let cron: any = await redis.get(`schedule:${flowId}:cron:v2`);
+            if (cron) {
+                scheduleId = cron.schedule_id;
+                let res = await fetch(`https://qstash.upstash.io/v2/schedules/${scheduleId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
+                    }
+                });
 
-            lKey = cron.l_key;
-            await redis.del(`schedule:${lKey}:scheduler`);
-            await redis.del(`schedule:${flowId}:cron`);
+                if (!res || (!res.ok && res.status != 404)) {
+                    throw await res.text();
+                }
+
+                lKey = cron.l_key;
+                await redis.del(`schedule:${lKey}:scheduler:v2`);
+                await redis.del(`schedule:${flowId}:cron:v2`);
+            }
         }
 
         lKey = makeKey(10);
 
-        let res = await fetch(`https://qstash.upstash.io/v1/publish/${process.env.SCHEDULE_HOOK_URL_PREFIX}?l_key=${lKey}`, {
+        let res = await fetch(`https://qstash.upstash.io/v2/schedules/${process.env.SCHEDULE_HOOK_URL_PREFIX}?l_key=${lKey}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${process.env.UPSTASH_QSTASH_TOKEN}`,
@@ -57,7 +81,7 @@ export default async function listen(req: NextRequest) {
         scheduleId = result.scheduleId;
 
         // Value must be array for matching multiple flows
-        await redis.set(`schedule:${lKey}:scheduler`, [{
+        await redis.set(`schedule:${lKey}:scheduler:v2`, [{
           flow_id: flowId,
           flows_user: flowsUser,
           handler_fn: handlerFn,
@@ -70,7 +94,7 @@ export default async function listen(req: NextRequest) {
           handler_fn: handlerFn,
           schedule_id: scheduleId
         };
-        await redis.set(`schedule:${flowId}:cron`, r);
+        await redis.set(`schedule:${flowId}:cron:v2`, r);
 
         return NextResponse.json(r);
     } catch(e: any) {

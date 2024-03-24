@@ -9,12 +9,19 @@ export default async (req: NextRequest) => {
     }
   
     try {
+        // For QStash v1
         let scheduler = await redis.get(`schedule:${lKey}:scheduler`);
 
         if (scheduler) {
           return NextResponse.json(scheduler);
         } else {
-          return new NextResponse('No flow binding with the key', {status: 404});
+          let scheduler = await redis.get(`schedule:${lKey}:scheduler:v2`);
+
+          if (scheduler) {
+            return NextResponse.json(scheduler);
+          } else {
+            return new NextResponse('No flow binding with the key', {status: 404});
+          }
         }
     } catch(e: any) {
         return new NextResponse(e.toString(), {status: 500});
